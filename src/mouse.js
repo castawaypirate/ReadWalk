@@ -78,6 +78,7 @@ function getOffsetAtPoint(x, y, textNode) {
 function handleMouseClick(event) {
     if (!mouseModeEnabled) return;
     if (isInputActive()) return;
+    if (isVisual()) return; // Don't handle if visual mode is active
     if (event.button !== 0 && event.button !== 2) return;
 
     if (!hasSelection()) return;
@@ -89,8 +90,15 @@ function handleMouseClick(event) {
     let targetOffset;
 
     if (selection.anchorNode && selection.anchorNode.nodeType === Node.TEXT_NODE) {
-        targetNode = selection.anchorNode;
-        targetOffset = selection.anchorOffset;
+        if (extend) {
+            // Visual mode: always use focusNode (current end of selection)
+            targetNode = selection.focusNode;
+            targetOffset = selection.focusOffset;
+        } else {
+            // Normal mode: use anchorNode
+            targetNode = selection.anchorNode;
+            targetOffset = selection.anchorOffset;
+        }
     } else {
         targetNode = findTextNodeAtPoint(event.clientX, event.clientY);
         if (!targetNode) return;

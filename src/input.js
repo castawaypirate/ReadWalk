@@ -38,7 +38,18 @@ document.addEventListener('keydown', (e) => {
     if (isInputActive()) return;
 
     if (e.key === 'v' && !e.ctrlKey && !e.altKey && !e.metaKey) {
-        setVisualMode(!isVisual());
+        browser.storage.local.get('mouseModeEnabled').then((result) => {
+            if (result.mouseModeEnabled) {
+                browser.runtime.sendMessage({
+                    type: 'showNotification',
+                    message: 'Cannot use Visual Mode while Mouse Mode is enabled. Please disable Mouse Mode first.'
+                });
+            } else {
+                setVisualMode(!isVisual());
+            }
+        }).catch(() => {
+            setVisualMode(!isVisual());
+        });
         e.preventDefault();
         return;
     }
@@ -72,5 +83,11 @@ document.addEventListener('keydown', (e) => {
     if ((e.key === 'w' || e.key === 'b' || e.key === '}' || e.key === '{') && !e.ctrlKey && !e.altKey && !e.metaKey) {
         handleNavigation(e.key);
         e.preventDefault();
+    }
+});
+
+browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.action === 'checkVisualMode') {
+        sendResponse({ isVisual: isVisual() });
     }
 });
