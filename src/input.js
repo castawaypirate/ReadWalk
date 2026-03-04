@@ -80,6 +80,24 @@ document.addEventListener('keydown', (e) => {
         return;
     }
 
+    if (e.key === 'm' && !e.ctrlKey && !e.altKey && !e.metaKey) {
+        if (isVisual()) {
+            browser.runtime.sendMessage({
+                type: 'showNotification',
+                message: 'Cannot use Mouse Mode while Visual Mode is active. Please exit Visual Mode first.'
+            });
+        } else {
+            browser.storage.local.get('mouseModeEnabled').then((result) => {
+                const newState = !result.mouseModeEnabled;
+                browser.storage.local.set({ mouseModeEnabled: newState });
+            }).catch(() => {
+                browser.storage.local.set({ mouseModeEnabled: true });
+            });
+        }
+        e.preventDefault();
+        return;
+    }
+
     if ((e.key === 'w' || e.key === 'b' || e.key === '}' || e.key === '{') && !e.ctrlKey && !e.altKey && !e.metaKey) {
         handleNavigation(e.key);
         e.preventDefault();
